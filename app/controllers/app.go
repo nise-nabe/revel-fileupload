@@ -18,7 +18,7 @@ func (c App) Index() revel.Result {
 func (c App) Upload() revel.Result {
 	for _, fileHeaders := range c.Params.Files {
 		for _, fileHeader := range fileHeaders {
-			path := fileHeader.Filename
+			path := "files/" + fileHeader.Filename
 			outFile, err := os.Create(path)
 			if err != nil {
 				log.Println(err)
