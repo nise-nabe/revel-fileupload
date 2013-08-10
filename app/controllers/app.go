@@ -4,6 +4,7 @@ import (
 	"github.com/robfig/revel"
 	"os"
 	"bufio"
+	"log"
 )
 
 type App struct {
@@ -17,18 +18,26 @@ func (c App) Index() revel.Result {
 func (c App) Upload() revel.Result {
 	for _, fileHeaders := range c.Params.Files {
 		for _, fileHeader := range fileHeaders {
-			path := "files/" + fileHeader.Filename
-			outFile, _ := os.OpenFile(path, os.O_CREATE, 0)
+			path := fileHeader.Filename
+			outFile, err := os.Create(path)
+			if err != nil {
+				log.Println(err)
+			}
 			writer := bufio.NewWriter(outFile)
 
 			file, _ := fileHeader.Open()
 			reader := bufio.NewReader(file)
+			buf := make([]byte, 4 * 1024 * 1024)
 			for {
-				b, err := reader.ReadByte()
+				n, err := reader.Read(buf)
 				if err != nil {
 					break
 				}
-				writer.WriteByte(b)
+				_, err = writer.Write(buf[:n])
+				if err != nil {
+					log.Println(err)
+					break
+				}
 			}
 			writer.Flush()
 		}
